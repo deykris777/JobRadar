@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { SavedJobsProvider } from "@/context/SavedJobsContext";
 
 export const metadata: Metadata = {
   title: "JobRadar",
@@ -32,7 +33,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <SavedJobsProvider>
+              {children}
+            </SavedJobsProvider>
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>

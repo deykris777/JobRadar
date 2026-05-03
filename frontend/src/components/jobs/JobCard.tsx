@@ -3,6 +3,8 @@ import { Job } from "@/types";
 import { MapPin, ExternalLink, IndianRupee, Heart, Link as LinkIcon } from "lucide-react";
 import { CompanyLogo } from "@/components/ui/CompanyLogo";
 import { useToast } from "@/context/ToastContext";
+import { useSavedJobs } from "@/context/SavedJobsContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface JobCardProps {
   job: Job;
@@ -11,8 +13,9 @@ interface JobCardProps {
 
 export const JobCard = ({ job, style }: JobCardProps) => {
   const { toast } = useToast();
-  // SavedJobs integration to come in Sprint 3
-  const saved = false;
+  const { toggleSave, isSaved } = useSavedJobs();
+  const { user } = useAuth();
+  const saved = isSaved(job._id);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -21,10 +24,15 @@ export const JobCard = ({ job, style }: JobCardProps) => {
     toast("Link copied to clipboard!", "success");
   };
 
-  const handleSave = (e: React.MouseEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toast("Saved jobs feature coming in Sprint 3!", "info");
+    if (!user) {
+      toast("Sign in to save jobs!", "info");
+      return;
+    }
+    await toggleSave(job);
+    toast(saved ? "Removed from saved jobs" : "Job saved! ❤️", saved ? "info" : "success");
   };
 
   return (
