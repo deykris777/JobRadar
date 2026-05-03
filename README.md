@@ -2,6 +2,8 @@
 
 > Full-stack job board that scrapes Internshala + Wellfound daily, stores in MongoDB, sends email alerts for new matches.
 
+🌐 **Live Demo:** [https://job-radar-lake.vercel.app/](https://job-radar-lake.vercel.app/)
+
 **Tech Stack:** Next.js 15 · Node.js/Express · MongoDB · Cheerio · Puppeteer · Nodemailer · node-cron
 
 ---
