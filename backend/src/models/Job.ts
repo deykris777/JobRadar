@@ -14,6 +14,7 @@ export interface IJob extends Document {
   source: "internshala" | "wellfound" | "custom";
   sourceId: string;
   postedAt: Date;
+  lastDateToApply?: Date;
   isActive: boolean;
   createdAt: Date;
 }
@@ -33,6 +34,7 @@ const JobSchema: Schema = new Schema(
     source: { type: String, required: true },
     sourceId: { type: String, required: true, unique: true },
     postedAt: { type: Date, default: Date.now },
+    lastDateToApply: { type: Date, default: null },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

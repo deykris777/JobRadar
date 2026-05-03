@@ -12,6 +12,7 @@ export interface Job {
   applyUrl: string;
   source: string;
   postedAt: string;
+  lastDateToApply?: string;
   createdAt: string;
 }
 

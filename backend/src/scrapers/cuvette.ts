@@ -57,6 +57,10 @@ export async function scrapeCuvette(): Promise<number> {
         const role = classifyRole(title + " " + (item.skills || []).join(" "));
         const applyUrl = `${BASE_URL}/internships/${item._id || item.id}`;
 
+        // Cuvette API returns applyBy / lastDate for deadlines
+        const rawDeadline = item.applyBy || item.lastDate || item.deadline || null;
+        const lastDateToApply = rawDeadline ? new Date(rawDeadline) : null;
+
         await Job.create({
           title,
           company,
@@ -71,6 +75,7 @@ export async function scrapeCuvette(): Promise<number> {
           source: "cuvette",
           sourceId,
           postedAt: new Date(item.createdAt || Date.now()),
+          ...(lastDateToApply && !isNaN(lastDateToApply.getTime()) ? { lastDateToApply } : {}),
           isActive: true,
         });
 

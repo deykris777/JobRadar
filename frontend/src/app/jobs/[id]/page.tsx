@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { getJobById } from "@/lib/api";
 import { CompanyLogo } from "@/components/ui/CompanyLogo";
-import { MapPin, IndianRupee, Briefcase, ExternalLink, ArrowLeft, Calendar, Building } from "lucide-react";
+import { MapPin, IndianRupee, Briefcase, ExternalLink, ArrowLeft, Calendar, Building, Timer, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -17,6 +17,20 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       title: "Job Not Found | JobRadar",
     };
   }
+}
+
+function getDeadlineInfo(lastDateToApply?: string) {
+  if (!lastDateToApply) return null;
+  const deadline = new Date(lastDateToApply);
+  if (isNaN(deadline.getTime())) return null;
+  const now = new Date();
+  const diffMs = deadline.getTime() - now.getTime();
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const label = deadline.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+  if (daysLeft < 0) return { label, daysLeft, variant: "closed" as const };
+  if (daysLeft <= 3) return { label, daysLeft, variant: "urgent" as const };
+  if (daysLeft <= 7) return { label, daysLeft, variant: "warning" as const };
+  return { label, daysLeft, variant: "safe" as const };
 }
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
@@ -36,6 +50,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
       </div>
     );
   }
+
+  const deadline = getDeadlineInfo(job.lastDateToApply);
 
   return (
     <div className="min-h-screen noise-bg flex flex-col">
@@ -78,10 +94,48 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                 </a>
                 <span className="text-xs font-medium text-fg-muted flex items-center gap-1.5 px-1">
                   <Calendar size={12} />
-                  Posted {new Date(job.postedAt).toLocaleDateString()}
+                  Posted {new Date(job.postedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                 </span>
+                {deadline && deadline.variant !== "closed" && (
+                  <span className={`text-xs font-semibold flex items-center gap-1.5 px-1 ${
+                    deadline.variant === "urgent" ? "text-red-400" : deadline.variant === "warning" ? "text-orange-300" : "text-emerald-400"
+                  }`}>
+                    <Timer size={12} />
+                    Apply by {deadline.label}
+                  </span>
+                )}
               </div>
             </div>
+
+            {/* Urgency banner — shown only when deadline exists */}
+            {deadline && (
+              <div className={`mb-6 flex items-center gap-3 rounded-2xl border px-5 py-4 ${
+                deadline.variant === "closed"
+                  ? "bg-zinc-800/60 border-zinc-700 text-zinc-400"
+                  : deadline.variant === "urgent"
+                  ? "bg-red-500/10 border-red-500/40 text-red-300"
+                  : deadline.variant === "warning"
+                  ? "bg-orange-500/10 border-orange-400/40 text-orange-200"
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+              }`}>
+                {deadline.variant === "closed" ? <CheckCircle2 size={18} /> : deadline.variant === "urgent" || deadline.variant === "warning" ? <AlertTriangle size={18} /> : <Clock size={18} />}
+                <div>
+                  {deadline.variant === "closed" ? (
+                    <p className="text-sm font-bold">Applications Closed</p>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold">
+                        {deadline.variant === "urgent" ? "⚡ Closing Soon — " : ""}
+                        Last date to apply: {deadline.label}
+                      </p>
+                      <p className="text-xs opacity-75 mt-0.5">
+                        {deadline.daysLeft === 0 ? "Closes today!" : `${deadline.daysLeft} day${deadline.daysLeft === 1 ? "" : "s"} remaining`}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-4 py-6 border-t border-b border-border">
               <div className="flex items-center gap-2 text-sm font-medium text-white bg-surface-2 px-4 py-2 rounded-xl border border-border">

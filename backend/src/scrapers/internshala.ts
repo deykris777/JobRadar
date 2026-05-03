@@ -54,10 +54,25 @@ export async function scrapeInternshala(): Promise<number> {
           const stipendText = card.find(".stipend").text().trim();
           const duration = card.find(".item_body").first().text().trim();
           const sourceId = card.attr("internship_id") || card.attr("id") || `${company}-${title}`;
-          const relativeUrl = card.find(".job-internship-name").attr("href") || "";
+          const relativeUrl = card.attr("data-href") || card.find("a").first().attr("href") || "";
           const applyUrl = relativeUrl.startsWith("http")
             ? relativeUrl
             : `${BASE_URL}${relativeUrl}`;
+
+          // Extract last date to apply
+          const lastDateText = card.find(".apply_by span, .last_apply_date, [class*='apply_by']").last().text().trim();
+          let lastDateToApply: Date | null = null;
+          if (lastDateText) {
+            const parsed = new Date(lastDateText);
+            if (!isNaN(parsed.getTime())) {
+              lastDateToApply = parsed;
+            } else {
+              // Internshala often shows "15 Jun" — add current year
+              const withYear = `${lastDateText} ${new Date().getFullYear()}`;
+              const parsedFallback = new Date(withYear);
+              if (!isNaN(parsedFallback.getTime())) lastDateToApply = parsedFallback;
+            }
+          }
 
           if (!title || !company) continue;
 
@@ -97,6 +112,7 @@ export async function scrapeInternshala(): Promise<number> {
             source: "internshala",
             sourceId: `internshala-${sourceId}`,
             postedAt: new Date(),
+            ...(lastDateToApply ? { lastDateToApply } : {}),
             isActive: true,
           });
 
