@@ -13,6 +13,7 @@ interface NavbarProps {
 export const Navbar = ({ onOpenFilters }: NavbarProps) => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -180,6 +181,7 @@ export const Navbar = ({ onOpenFilters }: NavbarProps) => {
           )}
           <button
             id="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               width: 36, height: 36, borderRadius: 8,
               background: "var(--surface-2)", border: "1px solid var(--border)",
@@ -187,10 +189,79 @@ export const Navbar = ({ onOpenFilters }: NavbarProps) => {
               cursor: "pointer",
             }}
           >
-            <Menu size={18} color="var(--fg)" />
+            {mobileMenuOpen ? <X size={18} color="var(--fg)" /> : <Menu size={18} color="var(--fg)" />}
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-nav-dropdown animate-in"
+          style={{
+            position: "absolute",
+            top: 60,
+            left: 0,
+            width: "100%",
+            background: "var(--surface)",
+            borderBottom: "1px solid var(--border)",
+            padding: "16px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+            zIndex: 40,
+          }}
+        >
+          <Link
+            href="/jobs"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)", textDecoration: "none" }}
+          >
+            Browse Jobs
+          </Link>
+          <Link
+            href="/alerts"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)", textDecoration: "none" }}
+          >
+            Email Alerts
+          </Link>
+
+          {!loading && (
+            user ? (
+              <>
+                <Link
+                  href="/saved"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 500, color: "var(--fg)", textDecoration: "none" }}
+                >
+                  <Bookmark size={16} />
+                  Saved Jobs
+                </Link>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); signOut(); }}
+                  style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", color: "#f87171", fontSize: 14, fontWeight: 500, padding: 0 }}
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  signInWithGoogle();
+                }}
+                className="btn btn-primary"
+                style={{ height: 40, borderRadius: 8, fontSize: 14, fontWeight: 700, letterSpacing: "0.04em", width: "100%" }}
+              >
+                SIGN IN
+              </button>
+            )
+          )}
+        </div>
+      )}
 
       <style>{`
         .desktop-nav { display: flex; }
