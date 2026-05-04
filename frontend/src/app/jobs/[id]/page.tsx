@@ -5,9 +5,10 @@ import { MapPin, IndianRupee, Briefcase, ExternalLink, ArrowLeft, Calendar, Buil
 import Link from "next/link";
 import { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   try {
-    const job = await getJobById(params.id);
+    const { id } = await params;
+    const job = await getJobById(id);
     return {
       title: `${job.title} at ${job.company} | JobRadar`,
       description: job.description ? job.description.substring(0, 160) : "View job details on JobRadar",
@@ -33,10 +34,11 @@ function getDeadlineInfo(lastDateToApply?: string) {
   return { label, daysLeft, variant: "safe" as const };
 }
 
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   let job;
   try {
-    job = await getJobById(params.id);
+    job = await getJobById(id);
   } catch (error) {
     return (
       <div className="min-h-screen noise-bg flex flex-col">
